@@ -72,8 +72,8 @@ function App() {
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-8">
-          <Card className="h-fit border-2 border-primary/10 shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-card to-muted/30">
+        <div className="grid lg:grid-cols-2 gap-8 mb-8">
+          <Card className="h-full border-2 border-primary/10 shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-card to-muted/30">
             <CardHeader className="bg-gradient-to-r from-primary/5 to-accent/5 border-b">
               <CardTitle className="flex items-center gap-3 text-xl">
                 <div className="p-2 bg-primary/10 rounded-lg">
@@ -84,13 +84,13 @@ function App() {
                 </span>
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 h-full flex flex-col">
               <Textarea
                 placeholder="✨ Paste your copied Excel table data here (Ctrl+V)..."
                 value={inputData}
                 onChange={(e) => setInputData(e.target.value)}
                 onPaste={handlePaste}
-                className="min-h-48 font-mono text-sm resize-none border-2 border-primary/20 focus:border-primary/40 bg-gradient-to-br from-background to-muted/20"
+                className="min-h-48 font-mono text-sm resize-none border-2 border-primary/20 focus:border-primary/40 bg-gradient-to-br from-background to-muted/20 flex-1"
                 disabled={isConverting}
               />
               
@@ -131,84 +131,82 @@ function App() {
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-accent">✨</span>
-                    <span>View the converted Markdown table on the right</span>
+                    <span>View the converted Markdown table below</span>
                   </li>
                 </ol>
               </div>
             </CardContent>
           </Card>
 
-          <div className="space-y-8">
-            <Card className="border-2 border-accent/10 shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-card to-accent/5">
-              <CardHeader className="bg-gradient-to-r from-accent/5 to-primary/5 border-b">
-                <CardTitle className="flex items-center justify-between text-xl">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-accent/10 rounded-lg">
-                      <DocumentDuplicateIcon className="w-6 h-6 text-accent" />
-                    </div>
-                    <span className="bg-gradient-to-r from-accent to-primary bg-clip-text text-transparent">
-                      Markdown Output
-                    </span>
+          <Card className="h-full border-2 border-accent/10 shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-card to-accent/5">
+            <CardHeader className="bg-gradient-to-r from-accent/5 to-primary/5 border-b">
+              <CardTitle className="flex items-center justify-between text-xl">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-accent/10 rounded-lg">
+                    <DocumentDuplicateIcon className="w-6 h-6 text-accent" />
                   </div>
-                  {markdownOutput && (
-                    <Button
-                      onClick={handleCopyMarkdown}
-                      size="sm"
-                      className="flex items-center gap-2 bg-gradient-to-r from-accent to-primary hover:from-accent/90 hover:to-primary/90 shadow-md hover:shadow-lg transition-all duration-200"
-                    >
-                      <CheckCircleIcon className="w-4 h-4" />
-                      💾 Copy Markdown
-                    </Button>
-                  )}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {markdownOutput ? (
-                  <div className="space-y-4">
-                    <div className="bg-gradient-to-br from-accent/5 to-primary/5 border-2 border-accent/20 rounded-lg p-4 font-mono text-sm overflow-auto max-h-96">
-                      <pre className="whitespace-pre-wrap text-foreground leading-relaxed">
-                        {markdownOutput}
-                      </pre>
-                    </div>
-                    <div className="text-xs text-muted-foreground bg-muted/30 p-3 rounded-lg border border-border/50">
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className="text-accent">📝</span>
-                        <span className="font-medium">Raw Markdown Table Code</span>
-                      </div>
-                      <p className="text-xs">
-                        This is the raw Markdown source code that you can copy and paste into any Markdown editor, GitHub, or documentation.
-                      </p>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="min-h-48 flex items-center justify-center text-muted-foreground border-2 border-dashed border-accent/30 rounded-lg bg-gradient-to-br from-accent/5 to-primary/5">
-                    <div className="text-center">
-                      <div className="text-4xl mb-2">📊</div>
-                      <div>Markdown table will appear here after conversion</div>
-                      <div className="text-sm mt-1 text-accent">Ready to transform your data! ✨</div>
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            <Card className="border-2 border-primary/10 shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-card to-primary/5">
-              <CardHeader className="bg-gradient-to-r from-primary/5 to-accent/5 border-b">
-                <CardTitle className="text-xl flex items-center gap-3">
-                  <div className="p-2 bg-primary/10 rounded-lg">
-                    <span className="text-2xl">👀</span>
-                  </div>
-                  <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                    Table Preview
+                  <span className="bg-gradient-to-r from-accent to-primary bg-clip-text text-transparent">
+                    Markdown Output
                   </span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <MarkdownTablePreview markdown={markdownOutput} />
-              </CardContent>
-            </Card>
-          </div>
+                </div>
+                {markdownOutput && (
+                  <Button
+                    onClick={handleCopyMarkdown}
+                    size="sm"
+                    className="flex items-center gap-2 bg-gradient-to-r from-accent to-primary hover:from-accent/90 hover:to-primary/90 shadow-md hover:shadow-lg transition-all duration-200"
+                  >
+                    <CheckCircleIcon className="w-4 h-4" />
+                    💾 Copy Markdown
+                  </Button>
+                )}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="h-full flex flex-col">
+              {markdownOutput ? (
+                <div className="space-y-4 flex-1 flex flex-col">
+                  <div className="bg-gradient-to-br from-accent/5 to-primary/5 border-2 border-accent/20 rounded-lg p-4 font-mono text-sm overflow-auto flex-1">
+                    <pre className="whitespace-pre-wrap text-foreground leading-relaxed">
+                      {markdownOutput}
+                    </pre>
+                  </div>
+                  <div className="text-xs text-muted-foreground bg-muted/30 p-3 rounded-lg border border-border/50">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-accent">📝</span>
+                      <span className="font-medium">Raw Markdown Table Code</span>
+                    </div>
+                    <p className="text-xs">
+                      This is the raw Markdown source code that you can copy and paste into any Markdown editor, GitHub, or documentation.
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex-1 flex items-center justify-center text-muted-foreground border-2 border-dashed border-accent/30 rounded-lg bg-gradient-to-br from-accent/5 to-primary/5">
+                  <div className="text-center">
+                    <div className="text-4xl mb-2">📊</div>
+                    <div>Markdown table will appear here after conversion</div>
+                    <div className="text-sm mt-1 text-accent">Ready to transform your data! ✨</div>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
+
+        <Card className="border-2 border-primary/10 shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-card to-primary/5">
+          <CardHeader className="bg-gradient-to-r from-primary/5 to-accent/5 border-b">
+            <CardTitle className="text-xl flex items-center gap-3">
+              <div className="p-2 bg-primary/10 rounded-lg">
+                <span className="text-2xl">👀</span>
+              </div>
+              <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                Table Preview
+              </span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <MarkdownTablePreview markdown={markdownOutput} />
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
