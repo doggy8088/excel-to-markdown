@@ -167,47 +167,17 @@ function App() {
                   <div className="space-y-4">
                     <div className="bg-gradient-to-br from-accent/5 to-primary/5 border-2 border-accent/20 rounded-lg p-4 font-mono text-sm overflow-auto max-h-96">
                       <pre className="whitespace-pre-wrap text-foreground leading-relaxed">
-                        {markdownOutput.split('\n').map((line, index) => (
-                          <div key={index} className={`${
-                            line.startsWith('|') && line.endsWith('|') 
-                              ? line.includes('---') 
-                                ? 'text-accent font-semibold border-b border-accent/30 pb-1 mb-1' 
-                                : 'hover:bg-primary/5 px-2 py-1 rounded transition-colors'
-                              : 'text-muted-foreground'
-                          }`}>
-                            {line.split('|').map((cell, cellIndex) => {
-                              if (cellIndex === 0 || cellIndex === line.split('|').length - 1) {
-                                return <span key={cellIndex} className="text-accent/60">{cell}</span>;
-                              }
-                              return (
-                                <span key={cellIndex} className={`${
-                                  line.includes('---') 
-                                    ? 'text-accent font-bold' 
-                                    : 'text-foreground'
-                                }`}>
-                                  {cell}
-                                </span>
-                              );
-                            })}
-                          </div>
-                        ))}
+                        {markdownOutput}
                       </pre>
                     </div>
                     <div className="text-xs text-muted-foreground bg-muted/30 p-3 rounded-lg border border-border/50">
                       <div className="flex items-center gap-2 mb-2">
-                        <span className="text-accent">💡</span>
-                        <span className="font-medium">Formatting Legend:</span>
+                        <span className="text-accent">📝</span>
+                        <span className="font-medium">Raw Markdown Table Code</span>
                       </div>
-                      <div className="grid grid-cols-2 gap-2 text-xs">
-                        <div className="flex items-center gap-2">
-                          <span className="w-3 h-3 bg-accent/20 rounded border border-accent/40"></span>
-                          <span>Table Headers</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="w-3 h-3 bg-primary/20 rounded border border-primary/40"></span>
-                          <span>Hover Rows</span>
-                        </div>
-                      </div>
+                      <p className="text-xs">
+                        This is the raw Markdown source code that you can copy and paste into any Markdown editor, GitHub, or documentation.
+                      </p>
                     </div>
                   </div>
                 ) : (
