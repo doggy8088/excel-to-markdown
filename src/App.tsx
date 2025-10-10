@@ -68,14 +68,14 @@ function App() {
             Excel to Markdown Converter
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Transform your Excel tables into beautiful Markdown format with just a simple paste ✨
+            Transform your Excel tables into beautiful <br/>Markdown format with just a simple paste!
           </p>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-8 mb-8">
           <Card className="h-full border-2 border-primary/10 shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-card to-muted/30">
-            <CardHeader className="bg-gradient-to-r from-primary/5 to-accent/5 border-b">
-              <CardTitle className="flex items-center justify-start gap-3 text-xl min-h-[3rem]">
+            <CardHeader className="bg-gradient-to-r from-primary/5 to-accent/5 border-b py-6">
+              <CardTitle className="flex items-center gap-3 text-xl min-h-[3rem]">
                 <div className="p-2 bg-primary/10 rounded-lg">
                   <ClipboardDocumentIcon className="w-6 h-6 text-primary" />
                 </div>
@@ -139,7 +139,7 @@ function App() {
           </Card>
 
           <Card className="h-full border-2 border-accent/10 shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-card to-accent/5">
-            <CardHeader className="bg-gradient-to-r from-accent/5 to-primary/5 border-b">
+            <CardHeader className="bg-gradient-to-r from-accent/5 to-primary/5 border-b py-6">
               <CardTitle className="flex items-center justify-between text-xl min-h-[3rem]">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-accent/10 rounded-lg">
@@ -193,7 +193,7 @@ function App() {
         </div>
 
         <Card className="border-2 border-primary/10 shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-card to-primary/5">
-          <CardHeader className="bg-gradient-to-r from-primary/5 to-accent/5 border-b">
+          <CardHeader className="bg-gradient-to-r from-primary/5 to-accent/5 border-b py-6">
             <CardTitle className="text-xl flex items-center gap-3 min-h-[3rem]">
               <div className="p-2 bg-primary/10 rounded-lg">
                 <span className="text-2xl">👀</span>
