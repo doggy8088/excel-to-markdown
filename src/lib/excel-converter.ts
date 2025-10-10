@@ -4,9 +4,47 @@ export function parseExcelData(clipboardData: string): string[][] {
   }
 
   const lines = clipboardData.trim().split('\n');
-  const rows = lines.map(line => {
-    return line.split('\t').map(cell => cell.trim());
-  });
+  const rows: string[][] = [];
+  let currentRow: string[] = [];
+  let inQuotedCell = false;
+  let currentCell = '';
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const cells = line.split('\t');
+
+    for (let j = 0; j < cells.length; j++) {
+      let cell = cells[j];
+
+      if (inQuotedCell) {
+        currentCell += '\n' + cell;
+        if (cell.endsWith('"') && !cell.endsWith('""')) {
+          currentCell = currentCell.slice(0, -1);
+          currentRow.push(currentCell.trim());
+          currentCell = '';
+          inQuotedCell = false;
+        }
+      } else {
+        if (cell.startsWith('"') && !cell.endsWith('"')) {
+          inQuotedCell = true;
+          currentCell = cell.slice(1);
+        } else if (cell.startsWith('"') && cell.endsWith('"') && cell.length > 1) {
+          currentRow.push(cell.slice(1, -1).trim());
+        } else {
+          currentRow.push(cell.trim());
+        }
+      }
+    }
+
+    if (!inQuotedCell && currentRow.length > 0) {
+      rows.push(currentRow);
+      currentRow = [];
+    }
+  }
+
+  if (currentRow.length > 0) {
+    rows.push(currentRow);
+  }
 
   if (rows.length === 0 || rows.every(row => row.length === 0)) {
     throw new Error('No valid table data found');
@@ -31,7 +69,7 @@ export function generateMarkdownTable(data: string[][]): string {
   const escapeCellContent = (content: string): string => {
     return content
       .replace(/\|/g, '\\|')
-      .replace(/\n/g, ' ')
+      .replace(/\n/g, '<br>')
       .trim() || ' ';
   };
 

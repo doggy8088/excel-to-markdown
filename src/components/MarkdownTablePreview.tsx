@@ -25,15 +25,19 @@ export function MarkdownTablePreview({ markdown }: MarkdownTablePreviewProps) {
       return null;
     }
 
+    const processCellContent = (cell: string) => {
+      return cell.trim().replace(/<br>/g, '\n');
+    };
+
     const headers = headerLine
       .split('|')
-      .map(cell => cell.trim())
+      .map(cell => processCellContent(cell))
       .filter(cell => cell !== '');
 
     const rows = dataLines.map(line =>
       line
         .split('|')
-        .map(cell => cell.trim())
+        .map(cell => processCellContent(cell))
         .filter(cell => cell !== '')
     );
 
@@ -62,7 +66,12 @@ export function MarkdownTablePreview({ markdown }: MarkdownTablePreviewProps) {
                 key={index}
                 className="border border-primary/20 px-4 py-3 text-left font-semibold text-primary bg-gradient-to-br from-primary/5 to-accent/5"
               >
-                {header || ' '}
+                {header.split('\n').map((line, lineIndex) => (
+                  <span key={lineIndex}>
+                    {line || ' '}
+                    {lineIndex < header.split('\n').length - 1 && <br />}
+                  </span>
+                ))}
               </th>
             ))}
           </tr>
@@ -77,7 +86,12 @@ export function MarkdownTablePreview({ markdown }: MarkdownTablePreviewProps) {
                   key={cellIndex}
                   className="border border-primary/10 px-4 py-3 text-foreground"
                 >
-                  {cell || ' '}
+                  {cell.split('\n').map((line, lineIndex) => (
+                    <span key={lineIndex}>
+                      {line || ' '}
+                      {lineIndex < cell.split('\n').length - 1 && <br />}
+                    </span>
+                  ))}
                 </td>
               ))}
             </tr>
