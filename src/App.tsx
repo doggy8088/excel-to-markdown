@@ -75,7 +75,7 @@ function App() {
         <div className="grid lg:grid-cols-2 gap-8 mb-8">
           <Card className="h-full border-2 border-primary/10 shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-card to-muted/30">
             <CardHeader className="bg-gradient-to-r from-primary/5 to-accent/5 border-b">
-              <CardTitle className="flex items-center gap-3 text-xl min-h-[3rem]">
+              <CardTitle className="flex items-center justify-start gap-3 text-xl min-h-[3rem]">
                 <div className="p-2 bg-primary/10 rounded-lg">
                   <ClipboardDocumentIcon className="w-6 h-6 text-primary" />
                 </div>
