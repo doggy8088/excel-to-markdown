@@ -75,7 +75,7 @@ function App() {
         <div className="grid lg:grid-cols-2 gap-8 mb-8">
           <Card className="h-full border-2 border-primary/10 shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-card to-muted/30">
             <CardHeader className="bg-gradient-to-r from-primary/5 to-accent/5 border-b">
-              <CardTitle className="flex items-center gap-3 text-xl">
+              <CardTitle className="flex items-center gap-3 text-xl min-h-[3rem]">
                 <div className="p-2 bg-primary/10 rounded-lg">
                   <ClipboardDocumentIcon className="w-6 h-6 text-primary" />
                 </div>
@@ -140,7 +140,7 @@ function App() {
 
           <Card className="h-full border-2 border-accent/10 shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-card to-accent/5">
             <CardHeader className="bg-gradient-to-r from-accent/5 to-primary/5 border-b">
-              <CardTitle className="flex items-center justify-between text-xl">
+              <CardTitle className="flex items-center justify-between text-xl min-h-[3rem]">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-accent/10 rounded-lg">
                     <DocumentDuplicateIcon className="w-6 h-6 text-accent" />
@@ -194,7 +194,7 @@ function App() {
 
         <Card className="border-2 border-primary/10 shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-card to-primary/5">
           <CardHeader className="bg-gradient-to-r from-primary/5 to-accent/5 border-b">
-            <CardTitle className="text-xl flex items-center gap-3">
+            <CardTitle className="text-xl flex items-center gap-3 min-h-[3rem]">
               <div className="p-2 bg-primary/10 rounded-lg">
                 <span className="text-2xl">👀</span>
               </div>
@@ -203,8 +203,10 @@ function App() {
               </span>
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <MarkdownTablePreview markdown={markdownOutput} />
+          <CardContent className="p-0">
+            <div className="w-full">
+              <MarkdownTablePreview markdown={markdownOutput} />
+            </div>
           </CardContent>
         </Card>
       </div>

@@ -5,7 +5,7 @@ interface MarkdownTablePreviewProps {
 export function MarkdownTablePreview({ markdown }: MarkdownTablePreviewProps) {
   if (!markdown.trim()) {
     return (
-      <div className="text-muted-foreground text-center py-12 bg-gradient-to-br from-accent/5 to-primary/5 rounded-lg border-2 border-dashed border-accent/30">
+      <div className="text-muted-foreground text-center py-12 bg-gradient-to-br from-accent/5 to-primary/5 border-dashed border-accent/30 m-6 rounded-lg border-2">
         <div className="text-4xl mb-3">📋</div>
         <div className="text-lg">Paste Excel table data to see the preview</div>
         <div className="text-sm text-accent mt-2">Watch your table come to life! ✨</div>
@@ -48,7 +48,7 @@ export function MarkdownTablePreview({ markdown }: MarkdownTablePreviewProps) {
 
   if (!tableData) {
     return (
-      <div className="text-destructive text-center py-12 bg-gradient-to-br from-destructive/5 to-destructive/10 rounded-lg border-2 border-dashed border-destructive/30">
+      <div className="text-destructive text-center py-12 bg-gradient-to-br from-destructive/5 to-destructive/10 border-dashed border-destructive/30 m-6 rounded-lg border-2">
         <div className="text-4xl mb-3">⚠️</div>
         <div className="text-lg font-medium">Invalid table format</div>
         <div className="text-sm mt-2">Please check your Excel data and try again</div>
@@ -57,14 +57,14 @@ export function MarkdownTablePreview({ markdown }: MarkdownTablePreviewProps) {
   }
 
   return (
-    <div className="w-full overflow-auto">
-      <table className="w-full border-collapse border-2 border-primary/20 rounded-lg overflow-hidden shadow-lg">
+    <div className="w-full overflow-x-auto">
+      <table className="w-full min-w-max border-collapse border-2 border-primary/20 overflow-hidden shadow-lg">
         <thead>
           <tr className="bg-gradient-to-r from-primary/10 to-accent/10">
             {tableData.headers.map((header, index) => (
               <th
                 key={index}
-                className="border border-primary/20 px-4 py-3 text-left font-semibold text-primary bg-gradient-to-br from-primary/5 to-accent/5"
+                className="border border-primary/20 px-4 py-3 text-left font-semibold text-primary bg-gradient-to-br from-primary/5 to-accent/5 whitespace-nowrap"
               >
                 {header.split('\n').map((line, lineIndex) => (
                   <span key={lineIndex}>
