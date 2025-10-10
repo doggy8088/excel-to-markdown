@@ -12,6 +12,31 @@ This template is your blank canvas. It comes with a minimal setup to help you ge
 
 Right now, this is just a starting point — the perfect place to begin building and testing your Spark applications.
 
+## 🚀 Deployment
+
+This project is automatically deployed to GitHub Pages when changes are pushed to the `main` branch.
+
+### Automatic Deployment
+- Push to `main` branch triggers automatic deployment
+- The built site will be available at: `https://doggy8088.github.io/excel-to-markdown/`
+
+### Manual Deployment
+You can also trigger deployment manually:
+1. Go to the "Actions" tab in your GitHub repository
+2. Select "Deploy to GitHub Pages" workflow
+3. Click "Run workflow" and select the `main` branch
+
+### Local Development
+```bash
+npm install
+npm run dev
+```
+
+### Build for Production
+```bash
+npm run build
+```
+
 🧹 Just Exploring?
 No problem! If you were just checking things out and don’t need to keep this code:
 
