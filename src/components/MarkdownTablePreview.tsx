@@ -2,6 +2,78 @@ interface MarkdownTablePreviewProps {
   markdown: string;
 }
 
+interface ParsedTable {
+  headers: string[];
+  rows: string[][];
+}
+
+function parseMarkdownTable(md: string): ParsedTable | null {
+  const lines = md.trim().split('\n');
+  if (lines.length < 2) return null;
+
+  const headerLine = lines[0];
+  const separatorLine = lines[1];
+  const dataLines = lines.slice(2);
+
+  if (!headerLine.includes('|') || !separatorLine.includes('---')) {
+    return null;
+  }
+
+  const processCellContent = (cell: string) => {
+    return cell.trim().replace(/<br>/g, '\n');
+  };
+
+  const headers = headerLine
+    .split('|')
+    .map(cell => processCellContent(cell))
+    .filter(cell => cell !== '');
+
+  const rows = dataLines.map(line =>
+    line
+      .split('|')
+      .map(cell => processCellContent(cell))
+      .filter(cell => cell !== '')
+  );
+
+  return { headers, rows };
+}
+
+function generateHtmlTable({ headers, rows }: ParsedTable): string {
+  const escapeHtml = (text: string) =>
+    text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+  const renderCell = (content: string) => {
+    const sanitized = escapeHtml(content).replace(/\n/g, '<br />');
+    return sanitized.length > 0 ? sanitized : '&nbsp;';
+  };
+
+  const headerHtml = headers
+    .map(header => `      <th>${renderCell(header)}</th>`)
+    .join('\n');
+
+  const bodyHtml = rows
+    .map(row => {
+      const cells = row
+        .map(cell => `      <td>${renderCell(cell)}</td>`)
+        .join('\n');
+      return `    <tr>\n${cells}\n    </tr>`;
+    })
+    .join('\n');
+
+  return [
+    '<table>',
+    '  <thead>',
+    '    <tr>',
+    headerHtml,
+    '    </tr>',
+    '  </thead>',
+    '  <tbody>',
+    bodyHtml,
+    '  </tbody>',
+    '</table>',
+  ].join('\n');
+}
+
 export function MarkdownTablePreview({ markdown }: MarkdownTablePreviewProps) {
   if (!markdown.trim()) {
     return (
@@ -12,37 +84,6 @@ export function MarkdownTablePreview({ markdown }: MarkdownTablePreviewProps) {
       </div>
     );
   }
-
-  const parseMarkdownTable = (md: string) => {
-    const lines = md.trim().split('\n');
-    if (lines.length < 2) return null;
-
-    const headerLine = lines[0];
-    const separatorLine = lines[1];
-    const dataLines = lines.slice(2);
-
-    if (!headerLine.includes('|') || !separatorLine.includes('---')) {
-      return null;
-    }
-
-    const processCellContent = (cell: string) => {
-      return cell.trim().replace(/<br>/g, '\n');
-    };
-
-    const headers = headerLine
-      .split('|')
-      .map(cell => processCellContent(cell))
-      .filter(cell => cell !== '');
-
-    const rows = dataLines.map(line =>
-      line
-        .split('|')
-        .map(cell => processCellContent(cell))
-        .filter(cell => cell !== '')
-    );
-
-    return { headers, rows };
-  };
 
   const tableData = parseMarkdownTable(markdown);
 
@@ -57,7 +98,7 @@ export function MarkdownTablePreview({ markdown }: MarkdownTablePreviewProps) {
   }
 
   return (
-    <div className="w-full overflow-x-auto">
+    <div className="w-full overflow-x-auto px-6 pb-6 pt-6">
       <table className="w-full min-w-max border-collapse border-2 border-primary/20 overflow-hidden shadow-lg">
         <thead>
           <tr className="bg-gradient-to-r from-primary/10 to-accent/10">
@@ -78,9 +119,12 @@ export function MarkdownTablePreview({ markdown }: MarkdownTablePreviewProps) {
         </thead>
         <tbody>
           {tableData.rows.map((row, rowIndex) => (
-            <tr key={rowIndex} className={`transition-colors hover:bg-accent/10 ${
-              rowIndex % 2 === 0 ? 'bg-background' : 'bg-muted/30'
-            }`}>
+            <tr
+              key={rowIndex}
+              className={`transition-colors hover:bg-accent/10 ${
+                rowIndex % 2 === 0 ? 'bg-background' : 'bg-muted/30'
+              }`}
+            >
               {row.map((cell, cellIndex) => (
                 <td
                   key={cellIndex}
@@ -100,4 +144,12 @@ export function MarkdownTablePreview({ markdown }: MarkdownTablePreviewProps) {
       </table>
     </div>
   );
+}
+
+export function getHtmlTableFromMarkdown(markdown: string) {
+  const parsed = parseMarkdownTable(markdown);
+  if (!parsed) {
+    return null;
+  }
+  return generateHtmlTable(parsed);
 }

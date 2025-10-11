@@ -6,7 +6,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ClipboardDocumentIcon, DocumentDuplicateIcon, CheckCircleIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { toast } from 'sonner';
 import { parseExcelData, generateMarkdownTable, copyToClipboard } from '@/lib/excel-converter';
-import { MarkdownTablePreview } from '@/components/MarkdownTablePreview';
+import { MarkdownTablePreview, getHtmlTableFromMarkdown } from '@/components/MarkdownTablePreview';
 
 function App() {
   const [inputData, setInputData] = useState('');
@@ -195,13 +195,37 @@ function App() {
 
         <Card className="border-2 border-primary/10 shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-card to-primary/5">
           <CardHeader className="bg-gradient-to-r from-primary/5 to-accent/5 border-b py-6">
-            <CardTitle className="text-xl flex items-center gap-3 min-h-[3rem]">
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <span className="text-2xl">👀</span>
+            <CardTitle className="text-xl flex items-center justify-between gap-3 min-h-[3rem]">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-primary/10 rounded-lg">
+                  <span className="text-2xl">👀</span>
+                </div>
+                <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                  Table Preview
+                </span>
               </div>
-              <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                Table Preview
-              </span>
+              {markdownOutput && (
+                <Button
+                  size="sm"
+                  onClick={async () => {
+                    const html = getHtmlTableFromMarkdown(markdownOutput);
+                    if (!html) {
+                      toast.error('😔 Failed to generate HTML table');
+                      return;
+                    }
+                    try {
+                      await copyToClipboard(html);
+                      toast.success('📄 HTML table copied to clipboard!');
+                    } catch (err) {
+                      toast.error('😔 Failed to copy HTML table');
+                    }
+                  }}
+                  className="flex items-center gap-2 bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-md hover:shadow-lg transition-all duration-200"
+                >
+                  <ClipboardDocumentIcon className="w-4 h-4" />
+                  Copy HTML
+                </Button>
+              )}
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
