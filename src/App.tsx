@@ -13,6 +13,7 @@ function App() {
   const [markdownOutput, setMarkdownOutput] = useState('');
   const [error, setError] = useState('');
   const [isConverting, setIsConverting] = useState(false);
+  const currentYear = new Date().getFullYear();
 
   const handlePaste = async (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
     e.preventDefault();
@@ -56,8 +57,8 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-accent/10">
-      <div className="container mx-auto px-4 py-12">
+    <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-accent/10 flex flex-col">
+      <div className="container mx-auto px-4 py-12 flex-1">
         <div className="mb-8 text-center">
           <div className="mb-4">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-primary to-accent rounded-2xl mb-4 shadow-lg">
@@ -210,6 +211,26 @@ function App() {
           </CardContent>
         </Card>
       </div>
+      <footer className="py-6 text-center text-sm text-muted-foreground border-t border-border/50 bg-background/60">
+        © {currentYear}{' '}
+        <a
+          href="https://www.facebook.com/will.fans/"
+          className="text-primary hover:text-primary/80 transition-colors"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Will 保哥
+        </a>
+        . All rights reserved. |{' '}
+        <a
+          href="https://github.com/doggy8088/excel-to-markdown"
+          className="text-primary hover:text-primary/80 transition-colors"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          GitHub Repo
+        </a>
+      </footer>
     </div>
   );
 }
