@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
@@ -7,28 +7,65 @@ import { ClipboardDocumentIcon, DocumentDuplicateIcon, CheckCircleIcon, Exclamat
 import { toast } from 'sonner';
 import { parseExcelData, generateMarkdownTable, copyToClipboard } from '@/lib/excel-converter';
 import { MarkdownTablePreview, getHtmlTableFromMarkdown } from '@/components/MarkdownTablePreview';
+import { isMarkdownTable, normalizeMarkdownTable } from '@/lib/markdown-table';
+
+type ConversionType = 'excel' | 'markdown';
 
 function App() {
   const [inputData, setInputData] = useState('');
   const [markdownOutput, setMarkdownOutput] = useState('');
   const [error, setError] = useState('');
   const [isConverting, setIsConverting] = useState(false);
+  const debounceTimerRef = useRef<number | null>(null);
+  const skipNextDebounceRef = useRef(false);
   const currentYear = new Date().getFullYear();
 
-  const handlePaste = async (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
-    e.preventDefault();
+  const convertRawDataToMarkdown = useCallback((rawData: string) => {
+    if (!rawData.trim()) {
+      throw new Error('No data provided');
+    }
+
+    if (isMarkdownTable(rawData)) {
+      const normalized = normalizeMarkdownTable(rawData);
+      if (!normalized) {
+        throw new Error('Invalid Markdown table format');
+      }
+
+      return {
+        markdown: normalized,
+        type: 'markdown' as ConversionType,
+      };
+    }
+
+    const parsedData = parseExcelData(rawData);
+    const markdown = generateMarkdownTable(parsedData);
+
+    return {
+      markdown,
+      type: 'excel' as ConversionType,
+    };
+  }, []);
+
+  const performConversion = useCallback((
+    rawData: string,
+    messages?: Partial<Record<ConversionType, string>>
+  ) => {
     setIsConverting(true);
     setError('');
 
-    try {
-      const clipboardData = e.clipboardData.getData('text');
-      setInputData(clipboardData);
+    const defaultMessages: Record<ConversionType, string> = {
+      excel: '🎉 Table converted successfully! Your data looks amazing!',
+      markdown: '✅ Markdown table detected! Preview refreshed automatically!',
+    };
 
-      const parsedData = parseExcelData(clipboardData);
-      const markdown = generateMarkdownTable(parsedData);
+    try {
+      const { markdown, type } = convertRawDataToMarkdown(rawData);
       setMarkdownOutput(markdown);
-      
-      toast.success('🎉 Table converted successfully! Your data looks amazing!');
+
+      const successMessage = messages?.[type] ?? defaultMessages[type];
+      if (successMessage) {
+        toast.success(successMessage);
+      }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to parse table data';
       setError(errorMessage);
@@ -37,6 +74,15 @@ function App() {
     } finally {
       setIsConverting(false);
     }
+  }, [convertRawDataToMarkdown]);
+
+  const handlePaste = async (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    e.preventDefault();
+    const clipboardData = e.clipboardData.getData('text');
+    skipNextDebounceRef.current = true;
+    setInputData(clipboardData);
+
+    performConversion(clipboardData);
   };
 
   const handleCopyMarkdown = async () => {
@@ -55,6 +101,46 @@ function App() {
     setMarkdownOutput('');
     setError('');
   };
+
+  const handleManualConvert = () => {
+    performConversion(inputData, {
+      excel: '🎯 Table updated from your edits!',
+      markdown: '✨ Markdown table reformatted from your edits!',
+    });
+  };
+
+  useEffect(() => {
+    if (skipNextDebounceRef.current) {
+      skipNextDebounceRef.current = false;
+      return;
+    }
+
+    if (debounceTimerRef.current) {
+      window.clearTimeout(debounceTimerRef.current);
+      debounceTimerRef.current = null;
+    }
+
+    if (!inputData.trim()) {
+      setMarkdownOutput('');
+      setError('');
+      return;
+    }
+
+    debounceTimerRef.current = window.setTimeout(() => {
+      performConversion(inputData, {
+        excel: '',
+        markdown: '',
+      });
+      debounceTimerRef.current = null;
+    }, 500);
+
+    return () => {
+      if (debounceTimerRef.current) {
+        window.clearTimeout(debounceTimerRef.current);
+        debounceTimerRef.current = null;
+      }
+    };
+  }, [inputData, performConversion]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-accent/10 flex flex-col">
@@ -92,7 +178,6 @@ function App() {
                 onChange={(e) => setInputData(e.target.value)}
                 onPaste={handlePaste}
                 className="min-h-48 font-mono text-sm resize-none border-2 border-primary/20 focus:border-primary/40 bg-gradient-to-br from-background to-muted/20 flex-1"
-                disabled={isConverting}
               />
               
               {error && (
@@ -106,9 +191,16 @@ function App() {
 
               <div className="flex gap-3">
                 <Button
+                  onClick={handleManualConvert}
+                  disabled={!inputData.trim() || isConverting}
+                  className="flex-1 bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-primary-foreground shadow-md hover:shadow-lg transition-all duration-200"
+                >
+                  ⚙️ Convert
+                </Button>
+                <Button
                   variant="outline"
                   onClick={handleClearAll}
-                  disabled={!inputData && !markdownOutput}
+                  disabled={(!inputData && !markdownOutput) || isConverting}
                   className="flex-1 border-2 border-destructive/20 text-destructive hover:bg-destructive/10 hover:border-destructive/40 transition-all duration-200"
                 >
                   🗑️ Clear All

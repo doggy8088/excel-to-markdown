@@ -1,44 +1,10 @@
+import { parseMarkdownTable, ParsedMarkdownTable } from '@/lib/markdown-table';
+
 interface MarkdownTablePreviewProps {
   markdown: string;
 }
 
-interface ParsedTable {
-  headers: string[];
-  rows: string[][];
-}
-
-function parseMarkdownTable(md: string): ParsedTable | null {
-  const lines = md.trim().split('\n');
-  if (lines.length < 2) return null;
-
-  const headerLine = lines[0];
-  const separatorLine = lines[1];
-  const dataLines = lines.slice(2);
-
-  if (!headerLine.includes('|') || !separatorLine.includes('---')) {
-    return null;
-  }
-
-  const processCellContent = (cell: string) => {
-    return cell.trim().replace(/<br>/g, '\n');
-  };
-
-  const headers = headerLine
-    .split('|')
-    .map(cell => processCellContent(cell))
-    .filter(cell => cell !== '');
-
-  const rows = dataLines.map(line =>
-    line
-      .split('|')
-      .map(cell => processCellContent(cell))
-      .filter(cell => cell !== '')
-  );
-
-  return { headers, rows };
-}
-
-function generateHtmlTable({ headers, rows }: ParsedTable): string {
+function generateHtmlTable({ headers, rows }: ParsedMarkdownTable): string {
   const escapeHtml = (text: string) =>
     text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
