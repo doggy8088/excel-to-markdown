@@ -1,8 +1,11 @@
+import { useState } from 'react';
 import { parseMarkdownTable, ParsedMarkdownTable } from '@/lib/markdown-table';
 
 interface MarkdownTablePreviewProps {
   markdown: string;
 }
+
+type SortDirection = 'asc' | 'desc' | null;
 
 function generateHtmlTable({ headers, rows }: ParsedMarkdownTable): string {
   const escapeHtml = (text: string) =>
@@ -41,6 +44,9 @@ function generateHtmlTable({ headers, rows }: ParsedMarkdownTable): string {
 }
 
 export function MarkdownTablePreview({ markdown }: MarkdownTablePreviewProps) {
+  const [sortColumn, setSortColumn] = useState<number | null>(null);
+  const [sortDirection, setSortDirection] = useState<SortDirection>(null);
+
   if (!markdown.trim()) {
     return (
       <div className="text-muted-foreground text-center py-12 bg-gradient-to-br from-accent/5 to-primary/5 border-dashed border-accent/30 m-6 rounded-lg border-2">
@@ -63,6 +69,41 @@ export function MarkdownTablePreview({ markdown }: MarkdownTablePreviewProps) {
     );
   }
 
+  const handleHeaderClick = (columnIndex: number) => {
+    if (sortColumn === columnIndex) {
+      // Cycle through: asc -> desc -> null
+      if (sortDirection === 'asc') {
+        setSortDirection('desc');
+      } else if (sortDirection === 'desc') {
+        setSortDirection(null);
+        setSortColumn(null);
+      }
+    } else {
+      setSortColumn(columnIndex);
+      setSortDirection('asc');
+    }
+  };
+
+  const sortedRows = [...tableData.rows];
+  if (sortColumn !== null && sortDirection !== null) {
+    sortedRows.sort((a, b) => {
+      const aVal = a[sortColumn] || '';
+      const bVal = b[sortColumn] || '';
+      
+      // Try to compare as numbers first
+      const aNum = parseFloat(aVal.replace(/,/g, ''));
+      const bNum = parseFloat(bVal.replace(/,/g, ''));
+      
+      if (!isNaN(aNum) && !isNaN(bNum)) {
+        return sortDirection === 'asc' ? aNum - bNum : bNum - aNum;
+      }
+      
+      // Fall back to string comparison
+      const comparison = aVal.localeCompare(bVal, undefined, { numeric: true, sensitivity: 'base' });
+      return sortDirection === 'asc' ? comparison : -comparison;
+    });
+  }
+
   return (
     <div className="w-full px-6 pb-6 pt-6">
       <table className="w-full border-collapse border-2 border-primary/20 overflow-hidden shadow-lg">
@@ -71,20 +112,31 @@ export function MarkdownTablePreview({ markdown }: MarkdownTablePreviewProps) {
             {tableData.headers.map((header, index) => (
               <th
                 key={index}
-                className="border border-primary/20 px-4 py-3 text-left font-semibold text-primary bg-gradient-to-br from-primary/5 to-accent/5"
+                onClick={() => handleHeaderClick(index)}
+                className="border border-primary/20 px-4 py-3 text-left font-semibold text-primary bg-gradient-to-br from-primary/5 to-accent/5 cursor-pointer hover:bg-primary/10 transition-colors select-none"
+                title="Click to sort"
               >
-                {header.split('\n').map((line, lineIndex) => (
-                  <span key={lineIndex}>
-                    {line || ' '}
-                    {lineIndex < header.split('\n').length - 1 && <br />}
+                <div className="flex items-center gap-2">
+                  <span>
+                    {header.split('\n').map((line, lineIndex) => (
+                      <span key={lineIndex}>
+                        {line || ' '}
+                        {lineIndex < header.split('\n').length - 1 && <br />}
+                      </span>
+                    ))}
                   </span>
-                ))}
+                  {sortColumn === index && (
+                    <span className="text-sm">
+                      {sortDirection === 'asc' ? '▲' : '▼'}
+                    </span>
+                  )}
+                </div>
               </th>
             ))}
           </tr>
         </thead>
         <tbody>
-          {tableData.rows.map((row, rowIndex) => (
+          {sortedRows.map((row, rowIndex) => (
             <tr
               key={rowIndex}
               className={`transition-colors hover:bg-accent/10 ${
