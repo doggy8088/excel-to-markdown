@@ -64,14 +64,14 @@ export function MarkdownTablePreview({ markdown }: MarkdownTablePreviewProps) {
   }
 
   return (
-    <div className="w-full overflow-x-auto px-6 pb-6 pt-6">
-      <table className="w-full min-w-max border-collapse border-2 border-primary/20 overflow-hidden shadow-lg">
+    <div className="w-full px-6 pb-6 pt-6">
+      <table className="w-full border-collapse border-2 border-primary/20 overflow-hidden shadow-lg">
         <thead>
           <tr className="bg-gradient-to-r from-primary/10 to-accent/10">
             {tableData.headers.map((header, index) => (
               <th
                 key={index}
-                className="border border-primary/20 px-4 py-3 text-left font-semibold text-primary bg-gradient-to-br from-primary/5 to-accent/5 whitespace-nowrap"
+                className="border border-primary/20 px-4 py-3 text-left font-semibold text-primary bg-gradient-to-br from-primary/5 to-accent/5"
               >
                 {header.split('\n').map((line, lineIndex) => (
                   <span key={lineIndex}>

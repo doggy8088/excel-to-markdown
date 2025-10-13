@@ -16,7 +16,7 @@ function App() {
   const [markdownOutput, setMarkdownOutput] = useState('');
   const [error, setError] = useState('');
   const [isConverting, setIsConverting] = useState(false);
-  const [isTableFullWidth, setIsTableFullWidth] = useState(true);
+  const [isTableFullWidth, setIsTableFullWidth] = useState(false);
   const debounceTimerRef = useRef<number | null>(null);
   const skipNextDebounceRef = useRef(false);
   const currentYear = new Date().getFullYear();
