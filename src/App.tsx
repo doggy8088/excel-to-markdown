@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { ClipboardDocumentIcon, DocumentDuplicateIcon, CheckCircleIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import { ClipboardDocumentIcon, DocumentDuplicateIcon, CheckCircleIcon, ExclamationTriangleIcon, ArrowsPointingOutIcon, ArrowsPointingInIcon } from '@heroicons/react/24/outline';
 import { toast } from 'sonner';
 import { parseExcelData, generateMarkdownTable, copyToClipboard } from '@/lib/excel-converter';
 import { MarkdownTablePreview, getHtmlTableFromMarkdown } from '@/components/MarkdownTablePreview';
@@ -16,6 +16,7 @@ function App() {
   const [markdownOutput, setMarkdownOutput] = useState('');
   const [error, setError] = useState('');
   const [isConverting, setIsConverting] = useState(false);
+  const [isTableFullWidth, setIsTableFullWidth] = useState(false);
   const debounceTimerRef = useRef<number | null>(null);
   const skipNextDebounceRef = useRef(false);
   const currentYear = new Date().getFullYear();
@@ -142,24 +143,49 @@ function App() {
     };
   }, [inputData, performConversion]);
 
+  useEffect(() => {
+    const handleGlobalPaste = (e: ClipboardEvent) => {
+      // Don't handle paste if user is already in the textarea
+      const target = e.target as HTMLElement;
+      if (target.tagName === 'TEXTAREA' || target.tagName === 'INPUT') {
+        return;
+      }
+
+      e.preventDefault();
+      const clipboardData = e.clipboardData?.getData('text');
+      if (clipboardData) {
+        skipNextDebounceRef.current = true;
+        setInputData(clipboardData);
+        performConversion(clipboardData);
+      }
+    };
+
+    document.addEventListener('paste', handleGlobalPaste);
+
+    return () => {
+      document.removeEventListener('paste', handleGlobalPaste);
+    };
+  }, [performConversion]);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-accent/10 flex flex-col">
-      <div className="container mx-auto px-4 py-12 flex-1">
-        <div className="mb-8 text-center">
-          <div className="mb-4">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-primary to-accent rounded-2xl mb-4 shadow-lg">
-              <DocumentDuplicateIcon className="w-8 h-8 text-primary-foreground" />
+      <div className="flex-1 flex flex-col">
+        <div className="container mx-auto px-4 py-12">
+          <div className="mb-8 text-center">
+            <div className="mb-4">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-primary to-accent rounded-2xl mb-4 shadow-lg">
+                <DocumentDuplicateIcon className="w-8 h-8 text-primary-foreground" />
+              </div>
             </div>
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent mb-3 tracking-tight">
+              Excel to Markdown Converter
+            </h1>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Transform your Excel tables into beautiful <br/>Markdown format with just a simple paste!
+            </p>
           </div>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent mb-3 tracking-tight">
-            Excel to Markdown Converter
-          </h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Transform your Excel tables into beautiful <br/>Markdown format with just a simple paste!
-          </p>
-        </div>
 
-        <div className="grid lg:grid-cols-2 gap-8 mb-8">
+          <div className="grid lg:grid-cols-2 gap-8 mb-8">
           <Card className="h-full border-2 border-primary/10 shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-card to-muted/30">
             <CardHeader className="bg-gradient-to-r from-primary/5 to-accent/5 border-b py-6">
               <CardTitle className="flex items-center gap-3 text-xl min-h-[3rem]">
@@ -216,14 +242,10 @@ function App() {
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-accent">🎯</span>
-                    <span>Click in the text area above</span>
+                    <span>Paste anywhere on the page (Ctrl+V)</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-primary">📝</span>
-                    <span>Paste the data (Ctrl+V)</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-accent">✨</span>
+                    <span className="text-primary">✨</span>
                     <span>View the converted Markdown table below</span>
                   </li>
                 </ol>
@@ -284,48 +306,71 @@ function App() {
             </CardContent>
           </Card>
         </div>
+        </div>
 
-        <Card className="border-2 border-primary/10 shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-card to-primary/5">
-          <CardHeader className="bg-gradient-to-r from-primary/5 to-accent/5 border-b py-6">
-            <CardTitle className="text-xl flex items-center justify-between gap-3 min-h-[3rem]">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-primary/10 rounded-lg">
-                  <span className="text-2xl">👀</span>
+        <div className={isTableFullWidth ? "w-full px-4 py-8" : "container mx-auto px-4 py-8"}>
+          <Card className="border-2 border-primary/10 shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-card to-primary/5">
+            <CardHeader className="bg-gradient-to-r from-primary/5 to-accent/5 border-b py-6">
+              <CardTitle className="text-xl flex items-center justify-between gap-3 min-h-[3rem]">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-primary/10 rounded-lg">
+                    <span className="text-2xl">👀</span>
+                  </div>
+                  <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                    Table Preview
+                  </span>
                 </div>
-                <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                  Table Preview
-                </span>
+                {markdownOutput && (
+                  <div className="flex items-center gap-2">
+                    <Button
+                      size="sm"
+                      onClick={() => setIsTableFullWidth(!isTableFullWidth)}
+                      variant="outline"
+                      className="flex items-center gap-2 border-2 border-primary/20 hover:border-primary/40 transition-all duration-200"
+                    >
+                      {isTableFullWidth ? (
+                        <>
+                          <ArrowsPointingInIcon className="w-4 h-4" />
+                          Constrain Width
+                        </>
+                      ) : (
+                        <>
+                          <ArrowsPointingOutIcon className="w-4 h-4" />
+                          Full Width
+                        </>
+                      )}
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={async () => {
+                        const html = getHtmlTableFromMarkdown(markdownOutput);
+                        if (!html) {
+                          toast.error('😔 Failed to generate HTML table');
+                          return;
+                        }
+                        try {
+                          await copyToClipboard(html);
+                          toast.success('📄 HTML table copied to clipboard!');
+                        } catch (err) {
+                          toast.error('😔 Failed to copy HTML table');
+                        }
+                      }}
+                      className="flex items-center gap-2 bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-md hover:shadow-lg transition-all duration-200"
+                    >
+                      <ClipboardDocumentIcon className="w-4 h-4" />
+                      Copy HTML
+                    </Button>
+                  </div>
+                )}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="w-full">
+                <MarkdownTablePreview markdown={markdownOutput} />
               </div>
-              {markdownOutput && (
-                <Button
-                  size="sm"
-                  onClick={async () => {
-                    const html = getHtmlTableFromMarkdown(markdownOutput);
-                    if (!html) {
-                      toast.error('😔 Failed to generate HTML table');
-                      return;
-                    }
-                    try {
-                      await copyToClipboard(html);
-                      toast.success('📄 HTML table copied to clipboard!');
-                    } catch (err) {
-                      toast.error('😔 Failed to copy HTML table');
-                    }
-                  }}
-                  className="flex items-center gap-2 bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-md hover:shadow-lg transition-all duration-200"
-                >
-                  <ClipboardDocumentIcon className="w-4 h-4" />
-                  Copy HTML
-                </Button>
-              )}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            <div className="w-full">
-              <MarkdownTablePreview markdown={markdownOutput} />
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
       </div>
       <footer className="py-6 text-center text-sm text-muted-foreground border-t border-border/50 bg-background/60">
         © {currentYear}{' '}
