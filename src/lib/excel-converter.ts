@@ -8,10 +8,33 @@ export function parseExcelData(clipboardData: string): string[][] {
   let currentRow: string[] = [];
   let inQuotedCell = false;
   let currentCell = '';
+  let tableStarted = false;
+  let tableEnded = false;
 
   for (let i = 0; i < lines.length; i++) {
+    if (tableEnded) break; // Stop processing after first table ends
+
     const line = lines[i];
     const cells = line.split('\t');
+
+    // Check if this line looks like table data (has at least one tab)
+    const isTableRow = line.includes('\t');
+
+    if (!isTableRow && !inQuotedCell) {
+      // This is non-table content
+      if (tableStarted) {
+        // Table has ended - stop processing
+        tableEnded = true;
+        break;
+      }
+      // Skip non-table content before table starts
+      continue;
+    }
+
+    // Mark that we've started processing a table
+    if (isTableRow) {
+      tableStarted = true;
+    }
 
     for (let j = 0; j < cells.length; j++) {
       let cell = cells[j];
