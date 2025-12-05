@@ -111,12 +111,23 @@ function App() {
     });
   };
 
+  // Constants for timing delays
+  const SCROLL_DELAY_MS = 100;
+  // Maximum recommended URL length (conservative limit for broad browser compatibility)
+  const MAX_URL_LENGTH = 2000;
+
   const handleShare = async () => {
     if (!inputData.trim()) return;
 
     try {
       const encodedData = encodeURIComponent(inputData);
       const shareUrl = `${window.location.origin}${window.location.pathname}#data=${encodedData}`;
+      
+      // Warn user if URL is very long
+      if (shareUrl.length > MAX_URL_LENGTH) {
+        toast.warning('⚠️ 資料較大，部分瀏覽器可能無法正確處理此連結', { duration: 4000 });
+      }
+      
       await copyToClipboard(shareUrl);
       toast.success('🔗 共用連結已複製到剪貼簿！', { duration: 3000 });
     } catch (err) {
@@ -134,17 +145,17 @@ function App() {
         if (decodedData.trim()) {
           skipNextDebounceRef.current = true;
           setInputData(decodedData);
-          // Use setTimeout to ensure state is updated before conversion
-          setTimeout(() => {
+          // Perform conversion after state update using microtask
+          queueMicrotask(() => {
             performConversion(decodedData, {
               excel: '🔗 從共用連結載入資料成功！',
               markdown: '🔗 從共用連結載入 Markdown 表格成功！',
             });
-            // Scroll to table preview after a short delay
+            // Scroll to table preview after rendering completes
             setTimeout(() => {
               tablePreviewRef.current?.scrollIntoView({ behavior: 'smooth' });
-            }, 100);
-          }, 0);
+            }, SCROLL_DELAY_MS);
+          });
           // Clear the hash from URL to avoid re-loading on refresh
           window.history.replaceState(null, '', window.location.pathname);
         }
