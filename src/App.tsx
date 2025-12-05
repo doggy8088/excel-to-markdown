@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { ClipboardDocumentIcon, DocumentDuplicateIcon, CheckCircleIcon, ExclamationTriangleIcon, ArrowsPointingOutIcon, ArrowsPointingInIcon } from '@heroicons/react/24/outline';
+import { ClipboardDocumentIcon, DocumentDuplicateIcon, CheckCircleIcon, ExclamationTriangleIcon, ArrowsPointingOutIcon, ArrowsPointingInIcon, ShareIcon } from '@heroicons/react/24/outline';
 import { toast } from 'sonner';
 import { parseExcelData, generateMarkdownTable, copyToClipboard } from '@/lib/excel-converter';
 import { MarkdownTablePreview, getHtmlTableFromMarkdown } from '@/components/MarkdownTablePreview';
@@ -19,6 +19,7 @@ function App() {
   const [isTableFullWidth, setIsTableFullWidth] = useState(false);
   const debounceTimerRef = useRef<number | null>(null);
   const skipNextDebounceRef = useRef(false);
+  const tablePreviewRef = useRef<HTMLDivElement>(null);
   const currentYear = new Date().getFullYear();
 
   const convertRawDataToMarkdown = useCallback((rawData: string) => {
@@ -109,6 +110,49 @@ function App() {
       markdown: '✨ Markdown table reformatted from your edits!',
     });
   };
+
+  const handleShare = async () => {
+    if (!inputData.trim()) return;
+
+    try {
+      const encodedData = encodeURIComponent(inputData);
+      const shareUrl = `${window.location.origin}${window.location.pathname}#data=${encodedData}`;
+      await copyToClipboard(shareUrl);
+      toast.success('🔗 共用連結已複製到剪貼簿！', { duration: 3000 });
+    } catch (err) {
+      toast.error('😔 無法複製共用連結到剪貼簿');
+    }
+  };
+
+  // Load data from URL hash on initial page load
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (hash.startsWith('#data=')) {
+      try {
+        const encodedData = hash.slice(6); // Remove '#data='
+        const decodedData = decodeURIComponent(encodedData);
+        if (decodedData.trim()) {
+          skipNextDebounceRef.current = true;
+          setInputData(decodedData);
+          // Use setTimeout to ensure state is updated before conversion
+          setTimeout(() => {
+            performConversion(decodedData, {
+              excel: '🔗 從共用連結載入資料成功！',
+              markdown: '🔗 從共用連結載入 Markdown 表格成功！',
+            });
+            // Scroll to table preview after a short delay
+            setTimeout(() => {
+              tablePreviewRef.current?.scrollIntoView({ behavior: 'smooth' });
+            }, 100);
+          }, 0);
+          // Clear the hash from URL to avoid re-loading on refresh
+          window.history.replaceState(null, '', window.location.pathname);
+        }
+      } catch (err) {
+        toast.error('😔 無法解析共用連結中的資料');
+      }
+    }
+  }, [performConversion]);
 
   useEffect(() => {
     if (skipNextDebounceRef.current) {
@@ -308,7 +352,7 @@ function App() {
         </div>
         </div>
 
-        <div className={isTableFullWidth ? "w-full px-4 py-8" : "container mx-auto px-4 py-8"}>
+        <div ref={tablePreviewRef} className={isTableFullWidth ? "w-full px-4 py-8" : "container mx-auto px-4 py-8"}>
           <Card className="border-2 border-primary/10 shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-card to-primary/5">
             <CardHeader className="bg-gradient-to-r from-primary/5 to-accent/5 border-b py-6">
               <CardTitle className="text-xl flex items-center justify-between gap-3 min-h-[3rem]">
@@ -359,6 +403,15 @@ function App() {
                     >
                       <ClipboardDocumentIcon className="w-4 h-4" />
                       Copy HTML
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={handleShare}
+                      variant="outline"
+                      className="flex items-center gap-2 border-2 border-accent/20 hover:border-accent/40 transition-all duration-200"
+                    >
+                      <ShareIcon className="w-4 h-4" />
+                      共用
                     </Button>
                   </div>
                 )}
