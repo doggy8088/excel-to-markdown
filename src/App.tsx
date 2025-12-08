@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ClipboardDocumentIcon, DocumentDuplicateIcon, CheckCircleIcon, ExclamationTriangleIcon, ArrowsPointingOutIcon, ArrowsPointingInIcon, ShareIcon } from '@heroicons/react/24/outline';
 import { toast } from 'sonner';
 import { parseExcelData, generateMarkdownTable, copyToClipboard } from '@/lib/excel-converter';
@@ -17,6 +18,7 @@ function App() {
   const [error, setError] = useState('');
   const [isConverting, setIsConverting] = useState(false);
   const [isTableFullWidth, setIsTableFullWidth] = useState(false);
+  const [isMaximized, setIsMaximized] = useState(false);
   const debounceTimerRef = useRef<number | null>(null);
   const skipNextDebounceRef = useRef(false);
   const tablePreviewRef = useRef<HTMLDivElement>(null);
@@ -77,15 +79,6 @@ function App() {
       setIsConverting(false);
     }
   }, [convertRawDataToMarkdown]);
-
-  const handlePaste = async (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
-    e.preventDefault();
-    const clipboardData = e.clipboardData.getData('text');
-    skipNextDebounceRef.current = true;
-    setInputData(clipboardData);
-
-    performConversion(clipboardData);
-  };
 
   const handleCopyMarkdown = async () => {
     if (!markdownOutput) return;
@@ -243,13 +236,24 @@ function App() {
           <div className="grid lg:grid-cols-2 gap-8 mb-8">
           <Card className="h-full border-2 border-primary/10 shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-card to-muted/30">
             <CardHeader className="bg-gradient-to-r from-primary/5 to-accent/5 border-b py-6">
-              <CardTitle className="flex items-center gap-3 text-xl min-h-[3rem]">
-                <div className="p-2 bg-primary/10 rounded-lg">
-                  <ClipboardDocumentIcon className="w-6 h-6 text-primary" />
+              <CardTitle className="flex items-center justify-between gap-3 text-xl min-h-[3rem]">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-primary/10 rounded-lg">
+                    <ClipboardDocumentIcon className="w-6 h-6 text-primary" />
+                  </div>
+                  <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                    Excel Data Input
+                  </span>
                 </div>
-                <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                  Excel Data Input
-                </span>
+                <Button
+                  size="sm"
+                  onClick={() => setIsMaximized(true)}
+                  variant="outline"
+                  className="flex items-center gap-2 border-2 border-primary/20 hover:border-primary/40 transition-all duration-200"
+                >
+                  <ArrowsPointingOutIcon className="w-4 h-4" />
+                  Maximize
+                </Button>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4 h-full flex flex-col">
@@ -257,7 +261,6 @@ function App() {
                 placeholder="✨ Paste your copied Excel table data here (Ctrl+V)..."
                 value={inputData}
                 onChange={(e) => setInputData(e.target.value)}
-                onPaste={handlePaste}
                 className="min-h-48 font-mono text-sm resize-none border-2 border-primary/20 focus:border-primary/40 bg-gradient-to-br from-background to-muted/20 flex-1"
               />
               
@@ -456,6 +459,63 @@ function App() {
           GitHub Repo
         </a>
       </footer>
+
+      {/* Maximized Excel Data Input Dialog */}
+      <Dialog open={isMaximized} onOpenChange={setIsMaximized}>
+        <DialogContent className="max-w-[95vw] w-full h-[90vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-3">
+              <div className="p-2 bg-primary/10 rounded-lg">
+                <ClipboardDocumentIcon className="w-6 h-6 text-primary" />
+              </div>
+              <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                Excel Data Input - Fullscreen Editor
+              </span>
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 flex flex-col gap-4 overflow-hidden">
+            <Textarea
+              placeholder="✨ Paste your copied Excel table data here (Ctrl+V)..."
+              value={inputData}
+              onChange={(e) => setInputData(e.target.value)}
+              className="flex-1 font-mono text-sm resize-none border-2 border-primary/20 focus:border-primary/40 bg-gradient-to-br from-background to-muted/20"
+            />
+            {error && (
+              <Alert variant="destructive" className="border-2 border-destructive/30 bg-gradient-to-r from-destructive/5 to-destructive/10">
+                <ExclamationTriangleIcon className="w-5 h-5" />
+                <AlertDescription className="font-medium">
+                  😞 {error}
+                </AlertDescription>
+              </Alert>
+            )}
+            <div className="flex gap-3">
+              <Button
+                onClick={handleManualConvert}
+                disabled={!inputData.trim() || isConverting}
+                className="flex-1 bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-primary-foreground shadow-md hover:shadow-lg transition-all duration-200"
+              >
+                ⚙️ Convert
+              </Button>
+              <Button
+                variant="outline"
+                onClick={handleClearAll}
+                disabled={(!inputData && !markdownOutput) || isConverting}
+                className="flex-1 border-2 border-destructive/20 text-destructive hover:bg-destructive/10 hover:border-destructive/40 transition-all duration-200"
+              >
+                🗑️ Clear All
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => setIsMaximized(false)}
+                className="flex-1 border-2 border-primary/20 hover:border-primary/40 transition-all duration-200"
+              >
+                <ArrowsPointingInIcon className="w-4 h-4 mr-2" />
+                Close
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
