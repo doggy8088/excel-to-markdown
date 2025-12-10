@@ -462,7 +462,7 @@ function App() {
 
       {/* Maximized Excel Data Input Dialog */}
       <Dialog open={isMaximized} onOpenChange={setIsMaximized}>
-        <DialogContent className="max-w-[95vw] w-full h-[90vh] flex flex-col">
+        <DialogContent className="max-w-[80vw] w-full h-[90vh] flex flex-col">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-3">
               <div className="p-2 bg-primary/10 rounded-lg">
